@@ -1,0 +1,97 @@
+<div id="offer-banner-carousel" class="offer-banner-carousel">
+  <!-- Carousel content will be populated here by JavaScript -->
+</div>
+
+<script type="text/javascript">
+  document.addEventListener('DOMContentLoaded', function() {
+    // Fetch offers using the Fealtyx API
+    fetchOffersAndPopulateCarousel();
+
+    async function fetchOffersAndPopulateCarousel() {
+      try {
+        const response = await fetch('/apps/your-app-path/offers');
+        const offers = await response.json();
+
+        // Check if offers exist
+        if (offers.length > 0) {
+          let carouselHtml = '';
+          offers.forEach(offer => {
+            carouselHtml += `
+              <div class="carousel-slide">
+                <img src="${offer.image}" alt="${offer.title}" class="offer-banner-img">
+                <div class="offer-details">
+                  <h4>${offer.title}</h4>
+                  <p>${offer.description}</p>
+                </div>
+              </div>`;
+          });
+          document.getElementById('offer-banner-carousel').innerHTML = carouselHtml;
+
+          // Initialize the carousel using Slick or Swiper
+          initializeCarousel();
+        } else {
+          // Hide the carousel if no offers
+          document.getElementById('offer-banner-carousel').style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Error fetching offers:', error);
+      }
+    }
+
+    function initializeCarousel() {
+      // Use any carousel library like Slick or Swiper here
+      $('#offer-banner-carousel').slick({
+        dots: true,
+        infinite: true,
+        slidesToShow: 1,
+        slidesToScroll: 1
+      });
+    }
+  });
+</script>
+
+<style>
+  .offer-banner-carousel {
+    margin: 20px 0;
+    position: relative;
+  }
+
+  .carousel-slide {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .offer-banner-img {
+    width: 100%;
+    max-width: 800px;
+  }
+
+  .offer-details {
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  .offer-details h4 {
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+
+  .offer-details p {
+    font-size: 16px;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Offer Banner Block",
+  "settings": [
+    {
+      "type": "text",
+      "id": "offer_banner_text",
+      "label": "Offer Banner Text"
+    }
+  ],
+  "target": "section"
+}
+{% endschema %}

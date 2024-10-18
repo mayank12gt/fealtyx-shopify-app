@@ -1,0 +1,247 @@
+
+<div class="offer-bar">
+  {% assign fealtyx_token = shop.metafields.custom.fealtyx_token %}
+  {% assign fealtyx_entity_type = shop.metafields.custom.fealtyx_entity_type %}
+  {% assign fealtyx_entity_id = shop.metafields.custom.fealtyx_entity_id %}
+  {% assign fealtyx_offerbar_hideon = shop.metafields.custom.fealtyx_offerbar_hideon %}
+  
+  <div class="offer-container">
+    <!-- Offer items will be populated here by JavaScript -->
+  </div>
+</div>
+
+
+<script type="text/javascript">
+  document.addEventListener('DOMContentLoaded', function() {
+    // Use local variables to avoid conflicts
+  
+
+    const token = {{ fealtyx_token | json }};
+    console.log("token: " + token);
+
+    const entityType = {{ fealtyx_entity_type | json }};
+    console.log("entityType: " + entityType);
+
+    const entityId = {{ fealtyx_entity_id | json }};
+    console.log("entityId: " + entityId);
+
+
+    const hideOnString = {{ fealtyx_offerbar_hideon | json }};
+    console.log("hideOn string: " + hideOnString);
+
+    // Split the string into an array
+    const hideOnArray = hideOnString ? hideOnString.split(',') : [];
+
+    const currentUrl = window.location.href.toLowerCase();
+    let shouldHideOfferBar = false;
+
+
+
+
+    // Log individual values
+    hideOnArray.forEach((value, index) => {
+      console.log(`Hide on ${index + 1}: ${value.trim()}`);
+      const trimmedValue = value.trim().toLowerCase();
+      console.log(`Hide on ${index + 1}: ${trimmedValue}`);
+      
+      // Check if the current URL contains this value
+      if (value != 'none'){
+      if (currentUrl.includes(trimmedValue)) {
+        console.log(`Match found: ${trimmedValue}`);
+        shouldHideOfferBar = true;
+      }
+    }
+    });
+
+  
+    if (shouldHideOfferBar) {
+      const offerBar = document.querySelector('.offer-bar');
+      if (offerBar) {
+        offerBar.style.display = 'none';
+        console.log('Offer bar hidden due to URL match');
+      }
+      return
+    }
+
+    // Fetch offers for this instance
+    fetchOffersAndPopulateBar();
+
+    async function fetchOffersAndPopulateBar() {
+      try {
+        const response = await fetch('https://qa-api.fealtyx.com/admin/liveOffers?entity_type='+entityType+'&entity_id='+entityId, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer '+token
+
+          }
+
+        });
+        if (!response.ok) {
+          throw new Error('Network response was not ok ' + response.statusText);
+        }
+        const data = await response.json();
+        console.log('Data received:', data);
+
+        const offers = data.LiveOffers;
+
+        {% comment %} if (window.location.href.includes('/products')) {
+          const offerBar = document.querySelector('.offer-bar');
+          if (offerBar) {
+            offerBar.style.display = 'none'; // Hide the offer bar
+          }
+          return; // Exit the function if on the products page
+        } {% endcomment %}
+
+        const offerContainers = document.querySelectorAll('.offer-container');
+        console.log("containers= "+offerContainers.length)
+
+offerContainers.forEach(offerContainer => {
+        if (offers.length > 0) {
+          let offerContainerHtml = '';
+          offers.forEach((offer) => {
+            offerContainerHtml += `<div class="offer-item"><div class="offer-content">${offer.display_text}</div></div>`;
+          });
+          
+          offerContainer.innerHTML = offerContainerHtml;
+          const totalSlides = offers.length;
+          initSlider(offerContainer,totalSlides); // Pass the container to the initSlider function
+        } else {
+          const offerBar = document.querySelector('.offer-bar');
+          offerContainer.innerHTML = `<p class="offer-content">Nodata</p>`;
+        }
+      })
+      } catch (error) {
+        console.error('Error fetching offers:', error);
+      }
+    }
+
+    function initSlider(container, totalSlides) {
+      let currentSlide = 0; // Initialize currentSlide for each slider
+      let autoSlideInterval;
+      let startX;
+      let currentX;
+    
+      function slideTo(index) {
+        currentSlide = index;
+        container.style.transform = `translateX(-${currentSlide * 100}%)`;
+      }
+    
+      function slideToNext() {
+        slideTo((currentSlide + 1) % totalSlides);
+      }
+    
+      function slideToPrev() {
+        slideTo((currentSlide - 1 + totalSlides) % totalSlides);
+      }
+    
+      function startAutoSlide() {
+        stopAutoSlide();
+        autoSlideInterval = setInterval(slideToNext, 3000);
+      }
+    
+      function stopAutoSlide() {
+        clearInterval(autoSlideInterval);
+      }
+    
+      container.addEventListener('touchstart', (e) => {
+        stopAutoSlide();
+        startX = e.touches[0].clientX;
+        currentX = startX;
+      });
+    
+      container.addEventListener('touchmove', (e) => {
+        if (startX === null) return;
+        currentX = e.touches[0].clientX;
+        const diff = startX - currentX;
+        container.style.transform = `translateX(calc(-${currentSlide * 100}% - ${diff}px))`;
+      });
+    
+      container.addEventListener('touchend', () => {
+        if (startX === null) return;
+        const diff = startX - currentX;
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) {
+            slideToNext();
+          } else {
+            slideToPrev();
+          }
+        } else {
+          slideTo(currentSlide);
+        }
+        startX = null;
+        startAutoSlide();
+      });
+    
+      startAutoSlide();
+    }
+  });
+</script>
+
+<style>
+  .offer-bar {
+    font-size: 14px;
+    overflow: hidden;
+    width: 100%;
+    position: relative;
+  }
+
+  .offer-container {
+    display: flex;
+    transition: transform 0.3s ease;
+    width: 100%;
+  }
+
+  .offer-item {
+    flex: 0 0 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+
+  .offer-content {
+    font-weight: bold;
+    text-align: center;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+  }
+
+  @media (max-width: 768px) {
+    .offer-bar {
+      font-size: 12px;
+    }
+
+    .offer-item {
+      padding: 8px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .offer-bar {
+      font-size: 10px;
+    }
+
+    .offer-item {
+      padding: 6px;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Offer Bar Block",
+  "settings": [
+    {
+      "type": "text",
+      "id": "offer_text",
+      "label": "Offer Text"
+    }
+  ],
+  "target": "section"
+}
+{% endschema %}
