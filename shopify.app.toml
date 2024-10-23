@@ -3,7 +3,7 @@
 client_id = "daf5c07e016538106bb21f43c6d379d1"
 name = "offers-store"
 handle = "offers-store"
-application_url = "https://korea-por-teams-staffing.trycloudflare.com"
+application_url = "https://fealtyx-shopify-app.onrender.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://korea-por-teams-staffing.trycloudflare.com/auth/callback",
-  "https://korea-por-teams-staffing.trycloudflare.com/auth/shopify/callback",
-  "https://korea-por-teams-staffing.trycloudflare.com/api/auth/callback"
+  "https://fealtyx-shopify-app.onrender.com/auth/callback",
+  "https://fealtyx-shopify-app.onrender.com/auth/shopify/callback",
+  "https://fealtyx-shopify-app.onrender.com/api/auth/callback"
 ]
 
 [webhooks]
