@@ -51,7 +51,113 @@ export const action = async ({ request }) => {
   const formData = await request.formData();
 
   if (formData.has("name") && formData.has("password")) {
-    // Handle login logic...
+    try {
+      // Make API call to FealtyX authentication endpoint
+      const authResponse = await fetch(
+        "https://qa-api.fealtyx.com/user/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: formData.get("name"),
+            userpass: formData.get("password"),
+          }),
+        },
+      );
+
+      // const responseText = await authResponse.text();
+      // console.log("Raw response:", responseText);
+
+      if (!authResponse.ok) {
+        console.log("authres" + authResponse);
+        throw new Error("Authentication failed");
+      }
+
+      const authData = await authResponse.json();
+      const token = authData.Token;
+      const entityType = authData.UserType;
+      const entityId = authData.EntityId;
+
+      console.log("authdata" + authData);
+      console.log("token" + token);
+      console.log("entitytype" + entityType);
+      console.log("entityid" + entityId);
+
+      // Store token in metafield
+      // await admin.graphql(`
+      //   mutation {
+      //     metafieldsSet(metafields: [{
+      //       ownerId: "${shopIdResponseJson.data.shop.id}"
+      //       namespace: "custom"
+      //       key: "fealtyx_token"
+      //       value: "${token}"
+      //       type: "single_line_text_field"
+      //     }]) {
+      //       metafields {
+      //         id
+      //         key
+      //         value
+      //       }
+      //       userErrors {
+      //         field
+      //         message
+      //       }
+      //     }
+      //   }
+      // `);
+
+      const metafieldsResponse = await admin.graphql(`
+        mutation {
+          metafieldsSet(metafields: [
+            {
+              ownerId: "${shopIdResponseJson.data.shop.id}"
+              namespace: "custom"
+              key: "fealtyx_token"
+              value: "${token}"
+              type: "single_line_text_field"
+            },
+            {
+              ownerId: "${shopIdResponseJson.data.shop.id}"
+              namespace: "custom"
+              key: "fealtyx_entity_id"
+              value: "${entityId}"
+              type: "single_line_text_field"
+            },
+            {
+              ownerId: "${shopIdResponseJson.data.shop.id}"
+              namespace: "custom"
+              key: "fealtyx_entity_type"
+              value: "${entityType}"
+              type: "single_line_text_field"
+            }
+          ]) {
+            metafields {
+              id
+              namespace
+              key
+              value
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+      `);
+
+      const metafieldsData = await metafieldsResponse.json();
+      if (metafieldsData.data?.metafieldsSet?.userErrors?.length > 0) {
+        console.error(
+          "Metafields set errors:",
+          metafieldsData.data.metafieldsSet.userErrors,
+        );
+        throw new Error("Failed to save authentication data");
+      }
+    } catch (error) {
+      console.log("error" + error);
+    }
   }
 
   if (formData.has("hideOn")) {
