@@ -1,34 +1,56 @@
+<div class="offer-banner">
 <div id="offer-banner-carousel" class="offer-banner-carousel">
   <!-- Carousel content will be populated here by JavaScript -->
+</div>
 </div>
 
 <script type="text/javascript">
   document.addEventListener('DOMContentLoaded', function() {
     // Fetch offers using the Fealtyx API
     fetchOffersAndPopulateCarousel();
-
+  
     async function fetchOffersAndPopulateCarousel() {
       try {
+        //fetch offer 
         const response = await fetch('/apps/your-app-path/offers');
-        const offers = await response.json();
-
+        const offers = [
+          {
+            title: "Summer Sale",
+            description: "Get 30% off on all summer items",
+            desktopImage: "https://www.fnp.com/assets/images/custom/new-desk-home/offer-banners/cred.jpg",
+            mobileImage: "https://www.fnp.com/assets/images/custom/new-mobile-home/new-ui/offer-banners/cred.jpg"
+          },
+          {
+            title: "New Collection",
+            description: "Check out our latest arrivals",
+            desktopImage: "https://www.fnp.com/assets/images/custom/new-desk-home/offer-banners/slice_strip_allinace.jpg",
+            mobileImage: "https://www.fnp.com/assets/images/custom/new-mobile-home/new-ui/offer-banners/offer_slice_mSiteHomePage.jpg"
+          },
+          {
+            title: "Free Shipping",
+            description: "Free shipping on orders over $50",
+            desktopImage: "https://www.fnp.com/assets/images/custom/new-desk-home/offer-banners/Airtel.jpg",
+            mobileImage: "https://www.fnp.com/assets/images/custom/new-mobile-home/new-ui/offer-banners/Airtel.jpg"
+          }
+        ];
+  
         // Check if offers exist
         if (offers.length > 0) {
           let carouselHtml = '';
           offers.forEach(offer => {
             carouselHtml += `
               <div class="carousel-slide">
-                <img src="${offer.image}" alt="${offer.title}" class="offer-banner-img">
-                <div class="offer-details">
-                  <h4>${offer.title}</h4>
-                  <p>${offer.description}</p>
-                </div>
+                <picture>
+                  <source media="(min-width: 768px)" srcset="${offer.desktopImage}">
+                  <img src="${offer.mobileImage}" alt="${offer.title}" class="offer-banner-img">
+                </picture>
               </div>`;
           });
           document.getElementById('offer-banner-carousel').innerHTML = carouselHtml;
-
-          // Initialize the carousel using Slick or Swiper
-          initializeCarousel();
+          const totalSlides = offers.length;
+          console.log(totalSlides)
+          // Initialize the carousel slider
+          initSlider(document.getElementById('offer-banner-carousel'),totalSlides );
         } else {
           // Hide the carousel if no offers
           document.getElementById('offer-banner-carousel').style.display = 'none';
@@ -37,37 +59,104 @@
         console.error('Error fetching offers:', error);
       }
     }
-
-    function initializeCarousel() {
-      // Use any carousel library like Slick or Swiper here
-      $('#offer-banner-carousel').slick({
-        dots: true,
-        infinite: true,
-        slidesToShow: 1,
-        slidesToScroll: 1
+  
+    function initSlider(container, totalSlides) {
+      let currentSlide = 0; // Initialize currentSlide for each slider
+      let autoSlideInterval;
+      let startX;
+      let currentX;
+    
+      function slideTo(index) {
+        currentSlide = index;
+        container.style.transform = `translateX(-${currentSlide * 100}%)`;
+      }
+    
+      function slideToNext() {
+        slideTo((currentSlide + 1) % totalSlides);
+      }
+    
+      function slideToPrev() {
+        slideTo((currentSlide - 1 + totalSlides) % totalSlides);
+      }
+    
+      function startAutoSlide() {
+        stopAutoSlide();
+        autoSlideInterval = setInterval(slideToNext, 3000);
+      }
+    
+      function stopAutoSlide() {
+        clearInterval(autoSlideInterval);
+      }
+    
+      container.addEventListener('touchstart', (e) => {
+        stopAutoSlide();
+        startX = e.touches[0].clientX;
+        currentX = startX;
       });
+    
+      container.addEventListener('touchmove', (e) => {
+        if (startX === null) return;
+        currentX = e.touches[0].clientX;
+        const diff = startX - currentX;
+        container.style.transform = `translateX(calc(-${currentSlide * 100}% - ${diff}px))`;
+      });
+    
+      container.addEventListener('touchend', () => {
+        if (startX === null) return;
+        const diff = startX - currentX;
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) {
+            slideToNext();
+          } else {
+            slideToPrev();
+          }
+        } else {
+          slideTo(currentSlide);
+        }
+        startX = null;
+        startAutoSlide();
+      });
+    
+      startAutoSlide();
     }
   });
 </script>
 
 <style>
-  .offer-banner-carousel {
-    margin: 20px 0;
+  .offer-banner {
+    font-size: 14px;
+    overflow: hidden;
+    width: 100%;
     position: relative;
   }
 
-  .carousel-slide {
+
+  .offer-banner-carousel {
     display: flex;
-    flex-direction: column;
+    transition: transform 0.3s ease;
+    width: 100%;
+  }
+
+  .carousel-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    display: flex;
     align-items: center;
+    justify-content: center;
+    padding: 10px;
+    box-sizing: border-box;
   }
 
   .offer-banner-img {
     width: 100%;
-    max-width: 800px;
   }
 
-  .offer-details {
+  picture {
+    width: 100%;
+    display: block;
+  }
+
+  {% comment %} .offer-details {
     text-align: center;
     margin-top: 10px;
   }
@@ -79,7 +168,7 @@
 
   .offer-details p {
     font-size: 16px;
-  }
+  } {% endcomment %}
 </style>
 
 {% schema %}

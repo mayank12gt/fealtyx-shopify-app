@@ -3,7 +3,7 @@
 client_id = "daf5c07e016538106bb21f43c6d379d1"
 name = "offers-store"
 handle = "offers-store"
-application_url = "https://fealtyx-shopify-app.onrender.com"
+application_url = "https://comprehensive-contribution-victoria-lap.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://fealtyx-shopify-app.onrender.com/auth/callback",
-  "https://fealtyx-shopify-app.onrender.com/auth/shopify/callback",
-  "https://fealtyx-shopify-app.onrender.com/api/auth/callback"
+  "https://comprehensive-contribution-victoria-lap.trycloudflare.com/auth/callback",
+  "https://comprehensive-contribution-victoria-lap.trycloudflare.com/auth/shopify/callback",
+  "https://comprehensive-contribution-victoria-lap.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
