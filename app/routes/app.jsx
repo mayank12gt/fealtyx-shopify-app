@@ -25,6 +25,7 @@ export default function App() {
         </Link>
         <Link to="/app/additional">Additional page</Link>
         <Link to="/app/settings">Settings</Link>
+        <Link to="/app/proxy">Proxy Endpoint</Link>
       </NavMenu>
       <Outlet />
     </AppProvider>

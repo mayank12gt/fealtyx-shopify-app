@@ -3,7 +3,7 @@
 client_id = "daf5c07e016538106bb21f43c6d379d1"
 name = "offers-store"
 handle = "offers-store"
-application_url = "https://comprehensive-contribution-victoria-lap.trycloudflare.com"
+application_url = "https://among-webshots-sbjct-warcraft.trycloudflare.com"
 embedded = true
 
 [build]
@@ -13,13 +13,13 @@ include_config_on_deploy = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products"
+scopes = "read_files,write_files,write_products,write_themes"
 
 [auth]
 redirect_urls = [
-  "https://comprehensive-contribution-victoria-lap.trycloudflare.com/auth/callback",
-  "https://comprehensive-contribution-victoria-lap.trycloudflare.com/auth/shopify/callback",
-  "https://comprehensive-contribution-victoria-lap.trycloudflare.com/api/auth/callback"
+  "https://among-webshots-sbjct-warcraft.trycloudflare.com/auth/callback",
+  "https://among-webshots-sbjct-warcraft.trycloudflare.com/auth/shopify/callback",
+  "https://among-webshots-sbjct-warcraft.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

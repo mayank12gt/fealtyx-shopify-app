@@ -17,90 +17,140 @@
           {
             title: "Summer Sale",
             description: "Get 30% off on all summer items",
-            desktopImage: "https://www.fnp.com/assets/images/custom/new-desk-home/offer-banners/cred.jpg",
-            mobileImage: "https://www.fnp.com/assets/images/custom/new-mobile-home/new-ui/offer-banners/cred.jpg"
+            desktopImage: "https://cdn.shopify.com/s/files/1/0645/8720/2755/files/cred.webp",
+            mobileImage: "https://cdn.shopify.com/s/files/1/0645/8720/2755/files/cred_58b042fb-0a2e-445b-a6ba-28ecac0f4ddb.webp?v=1731749267"
           },
           {
             title: "New Collection",
             description: "Check out our latest arrivals",
-            desktopImage: "https://www.fnp.com/assets/images/custom/new-desk-home/offer-banners/slice_strip_allinace.jpg",
-            mobileImage: "https://www.fnp.com/assets/images/custom/new-mobile-home/new-ui/offer-banners/offer_slice_mSiteHomePage.jpg"
+            desktopImage: "https://cdn.shopify.com/s/files/1/0645/8720/2755/files/slice_strip_allinace.webp?v=1731747961",
+            mobileImage: "https://cdn.shopify.com/s/files/1/0645/8720/2755/files/offer_slice_mSiteHomePage.webp?v=1731749381"
           },
           {
             title: "Free Shipping",
             description: "Free shipping on orders over $50",
-            desktopImage: "https://www.fnp.com/assets/images/custom/new-desk-home/offer-banners/Airtel.jpg",
-            mobileImage: "https://www.fnp.com/assets/images/custom/new-mobile-home/new-ui/offer-banners/Airtel.jpg"
+            desktopImage: "https://cdn.shopify.com/s/files/1/0645/8720/2755/files/Airtel.jpg",
+            mobileImage: "https://cdn.shopify.com/s/files/1/0645/8720/2755/files/Airtel.webp?v=1731749323"
           }
         ];
-  
-        // Check if offers exist
-        if (offers.length > 0) {
+
+
+        const offerBannerContainers = document.querySelectorAll('.offer-banner-carousel');
+        console.log("containers= "+offerBannerContainers.length)
+
+        offerBannerContainers.forEach(offerContainer => {
+         // Check if offers exist
+         if (offers.length > 0) {
           let carouselHtml = '';
-          offers.forEach(offer => {
+
+          offers.forEach((offer, index) => {
+            if (offerContainer.offsetWidth >= 768) {
+              imageSrc = offer.desktopImage;
+            } else {
+              imageSrc = offer.mobileImage;
+            }
+
             carouselHtml += `
               <div class="carousel-slide">
                 <picture>
-                  <source media="(min-width: 768px)" srcset="${offer.desktopImage}">
-                  <img src="${offer.mobileImage}" alt="${offer.title}" class="offer-banner-img">
+                  {% comment %} <source media="(min-width: 768px)" srcset="${offer.desktopImage}"> {% endcomment %}
+                  <img src="${imageSrc}" alt="${offer.title}" class="offer-banner-img">
                 </picture>
               </div>`;
           });
-          document.getElementById('offer-banner-carousel').innerHTML = carouselHtml;
-          const totalSlides = offers.length;
-          console.log(totalSlides)
+          offerContainer.innerHTML = carouselHtml;
+  
+          // Add dot indicators
+          const dotsContainer = document.createElement('div');
+          dotsContainer.classList.add('carousel-dots');
+          for (let i = 0; i < offers.length; i++) {
+            const dot = document.createElement('div');
+            dot.classList.add('carousel-dot');
+            dot.dataset.slide = i;
+            dotsContainer.appendChild(dot);
+          }
+          offerContainer.parentElement.appendChild(dotsContainer);
+  
           // Initialize the carousel slider
-          initSlider(document.getElementById('offer-banner-carousel'),totalSlides );
+          initSlider(offerContainer, offers.length);
         } else {
           // Hide the carousel if no offers
           document.getElementById('offer-banner-carousel').style.display = 'none';
         }
+        })
+  
+        window.addEventListener('resize', () => {
+          offerBannerContainers.forEach((container, index) => {
+            updateImageSources(container, offers);
+          });
+        });
+       
       } catch (error) {
         console.error('Error fetching offers:', error);
       }
     }
+
+    function updateImageSources(container, offers) {
+      const slides = container.querySelectorAll('.carousel-slide img');
+      slides.forEach((img, index) => {
+        if (container.offsetWidth >= 768) {
+          img.src = offers[index].desktopImage;
+        } else {
+          img.src = offers[index].mobileImage;
+        }
+      });
+    }
   
     function initSlider(container, totalSlides) {
-      let currentSlide = 0; // Initialize currentSlide for each slider
+      let currentSlide = 0;
       let autoSlideInterval;
       let startX;
       let currentX;
-    
+  
+      const dots = document.querySelectorAll('.carousel-dot');
+  
       function slideTo(index) {
         currentSlide = index;
         container.style.transform = `translateX(-${currentSlide * 100}%)`;
+        updateDots();
       }
-    
+  
       function slideToNext() {
         slideTo((currentSlide + 1) % totalSlides);
       }
-    
+  
       function slideToPrev() {
         slideTo((currentSlide - 1 + totalSlides) % totalSlides);
       }
-    
+  
+      function updateDots() {
+        dots.forEach((dot, index) => {
+          dot.classList.toggle('active', index === currentSlide);
+        });
+      }
+  
       function startAutoSlide() {
         stopAutoSlide();
         autoSlideInterval = setInterval(slideToNext, 3000);
       }
-    
+  
       function stopAutoSlide() {
         clearInterval(autoSlideInterval);
       }
-    
+  
       container.addEventListener('touchstart', (e) => {
         stopAutoSlide();
         startX = e.touches[0].clientX;
         currentX = startX;
       });
-    
+  
       container.addEventListener('touchmove', (e) => {
         if (startX === null) return;
         currentX = e.touches[0].clientX;
         const diff = startX - currentX;
         container.style.transform = `translateX(calc(-${currentSlide * 100}% - ${diff}px))`;
       });
-    
+  
       container.addEventListener('touchend', () => {
         if (startX === null) return;
         const diff = startX - currentX;
@@ -116,7 +166,13 @@
         startX = null;
         startAutoSlide();
       });
-    
+  
+      dots.forEach((dot) => {
+        dot.addEventListener('click', () => {
+          slideTo(parseInt(dot.dataset.slide));
+        });
+      });
+  
       startAutoSlide();
     }
   });
@@ -124,7 +180,6 @@
 
 <style>
   .offer-banner {
-    font-size: 14px;
     overflow: hidden;
     width: 100%;
     position: relative;
